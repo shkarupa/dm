@@ -12,25 +12,30 @@ func factorize(n int) map[int]int {
 	return factorization
 }
 
-func node(factorization, indices map[int]int, seen map[int]bool, powers []int, n int) {
-	seen[n] = true
-	for k, v := range factorization {
-		if powers[indices[k]] < v {
-			fmt.Printf("\t%d--%d\n", n, n * k)
-			p := make([]int, len(powers))
-			copy(p, powers)
-			p[indices[k]]++
-			if (! seen[n * k]) {
-				node(factorization, indices, seen, p, n * k)
+func node(factorization, indices map[int]int,
+		  processed map[int]bool,
+		  powers []int,
+		  n int) {
+	for factor, maxPower := range factorization {
+		if powers[indices[factor]] < maxPower {
+			nextN := n * factor
+			fmt.Printf("\t%d--%d\n", n, nextN)
+			if (! processed[nextN]) {
+				nextNPowers := make([]int, len(powers))
+				copy(nextNPowers, powers)
+				nextNPowers[indices[factor]]++
+				node(factorization, indices, processed, nextNPowers, nextN)
 			}
 		}
 	}
+	processed[n] = true
 }
 
 func main() {
 	var n int
 	fmt.Scanf("%d", &n)
 	fmt.Printf("graph {\n")
+	fmt.Printf("\t1\n")
 	factorization := factorize(n)
 	indices := make(map[int]int, len(factorization))
 	i := 0
@@ -38,8 +43,8 @@ func main() {
 		indices[k] = i
 		i++
 	}
+	processed := make(map[int]bool)
 	powers := make([]int, len(factorization))
-	seen := make(map[int]bool)
-	node(factorization, indices, seen, powers, 1)
+	node(factorization, indices, processed, powers, 1)
 	fmt.Printf("}\n")
 }
